@@ -1,0 +1,8 @@
+fastapi
+httpx
+uvicorn
+redis
+loguru
+slowapi
+pytest
+pytest-cov
