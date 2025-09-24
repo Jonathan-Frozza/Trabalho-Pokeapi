@@ -9,12 +9,12 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from contextlib import asynccontextmanager
 
+
 USE_REDIS = os.getenv("USE_REDIS", "true").lower() == "true"
+
 redis_client = None
 if USE_REDIS:
     redis_client = redis.from_url("redis://localhost:6379", decode_responses=True)
-
-
 limiter = Limiter(key_func=get_remote_address)
 
 
@@ -43,7 +43,7 @@ app.add_middleware(
 
 
 @app.get("/pokemons")
-@limiter.limit("100/minute")  # limite maior para evitar 429 nos testes
+@limiter.limit("100/minute")  
 async def get_pokemons(
     request: Request,
     limit: int = Query(20, ge=1, le=100),
@@ -54,7 +54,15 @@ async def get_pokemons(
         raise HTTPException(status_code=401, detail="Não autorizado")
 
     cache_key = f"pokemons:{limit}:{offset}"
-    if redis_client and (cached := await redis_client.get(cache_key)):
+    cached = None
+
+    if redis_client:
+        try:
+            cached = await redis_client.get(cache_key)
+        except Exception:
+            cached = None
+
+    if cached:
         return json.loads(cached)
 
     async with httpx.AsyncClient() as client:
@@ -67,7 +75,10 @@ async def get_pokemons(
         data = {"data": response.json()}
 
     if redis_client:
-        await redis_client.setex(cache_key, 60, json.dumps(data))
+        try:
+            await redis_client.setex(cache_key, 60, json.dumps(data))
+        except Exception:
+            pass
 
     return data
 
@@ -79,7 +90,16 @@ async def get_pokemon(request: Request, id: int, x_api_key: str = Header(None)):
         raise HTTPException(status_code=401, detail="Não autorizado")
 
     cache_key = f"pokemon:{id}"
-    if redis_client and (cached := await redis_client.get(cache_key)):
+    cached = None
+
+    
+    if redis_client:
+        try:
+            cached = await redis_client.get(cache_key)
+        except Exception:
+            cached = None
+
+    if cached:
         return json.loads(cached)
 
     async with httpx.AsyncClient() as client:
@@ -91,7 +111,11 @@ async def get_pokemon(request: Request, id: int, x_api_key: str = Header(None)):
 
         data = {"data": response.json()}
 
+   
     if redis_client:
-        await redis_client.setex(cache_key, 60, json.dumps(data))
+        try:
+            await redis_client.setex(cache_key, 60, json.dumps(data))
+        except Exception:
+            pass
 
     return data
