@@ -2,8 +2,23 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fastapi.testclient import TestClient
 from main import app
+import pytest
+import main
+import json
+from unittest.mock import AsyncMock
 
-client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def fake_redis(monkeypatch):
+    """Substitui redis_client por mock em todos os testes"""
+    fake = AsyncMock()
+    fake.get.return_value = None
+    fake.set.return_value = True
+    monkeypatch.setattr(main, "redis_client", fake)
+    return fake
+
+
+client = TestClient(main.app)
 
 
 def test_get_pokemons_success():
