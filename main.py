@@ -84,7 +84,7 @@ async def api_get_pokemon(
         raise HTTPException(status_code=401, detail="Não autorizado")
     p = await get_pokemon(db, id)
     if not p:
-        raise HTTPException(status_code=404, detail="Not Found")
+        raise HTTPException(status_code=404, detail="Não encontrado")
     return p
 
 
@@ -99,7 +99,7 @@ async def api_put_pokemon(
         raise HTTPException(status_code=401, detail="Não autorizado")
     p = await get_pokemon(db, id)
     if not p:
-        raise HTTPException(status_code=404, detail="Not Found")
+        raise HTTPException(status_code=404, detail="Não encontrado")
     update_data = {}
     if payload.name is not None:
         update_data["name"] = payload.name
@@ -119,7 +119,7 @@ async def api_patch_pokemon(
         raise HTTPException(status_code=401, detail="Não autorizado")
     p = await get_pokemon(db, id)
     if not p:
-        raise HTTPException(status_code=404, detail="Not Found")
+        raise HTTPException(status_code=404, detail="Não encontrado")
     return await update_pokemon(db, p, payload)
 
 
@@ -133,7 +133,7 @@ async def api_delete_pokemon(
         raise HTTPException(status_code=401, detail="Não autorizado")
     p = await get_pokemon(db, id)
     if not p:
-        raise HTTPException(status_code=404, detail="Not Found")
+        raise HTTPException(status_code=404, detail="Não encontrado")
     await delete_pokemon(db, id)
     return None
 
@@ -142,7 +142,7 @@ async def api_delete_pokemon(
 # Endpoints externos (com cache)
 # -----------------------------
 
-@app.get("/external/pokemons", tags=["external"], summary="List pokemons from PokeAPI (cached)")
+@app.get("/external/pokemons", tags=["external"], summary="lista pokemons da PokeAPI (armazenado em cache)")
 async def external_list_pokemons(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
@@ -176,7 +176,7 @@ async def external_list_pokemons(
     return data
 
 
-@app.get("/external/pokemons/{poke_id}", tags=["external"], summary="Fetch single pokemon from PokeAPI (cached)")
+@app.get("/external/pokemons/{poke_id}", tags=["external"], summary="procura um pokemon na PokeAPI (armazenado em cache)")
 async def external_get_pokemon(
     poke_id: int,
     x_api_key: str = Header(None),
