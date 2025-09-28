@@ -1,8 +1,15 @@
 fastapi
+uvicorn[standard]
 httpx
-uvicorn
+pydantic
 redis
 loguru
 slowapi
+sqlalchemy[asyncio]
+alembic
+asyncpg
 pytest
-pytest-cov
+pytest-asyncio
+psycopg2-binary
+prometheus-fastapi-instrumentator
+celery
